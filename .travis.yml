@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - "1.11.x"
+
+env:
+  global:
+    - PATH=$HOME/gopath/bin:$PATH
+
+script:
+  - go test -bench=. -v
