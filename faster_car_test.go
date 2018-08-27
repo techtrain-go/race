@@ -5,7 +5,7 @@ import (
 )
 
 func TestFasterCar_Go(t *testing.T) {
-	car := NewCar(m)
+	car := NewCar("./routes")
 	path := car.Go("A", "D")
 
 	expected := []string{"A", "C", "D"}

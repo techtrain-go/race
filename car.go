@@ -1,18 +1,19 @@
 package race
 
 import (
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 type Car struct {
-	maps string
+	file string
 }
 
-func NewCar(m string) *Car {
+func NewCar(f string) *Car {
 	return &Car{
-		maps: m,
+		file: f,
 	}
 }
 
@@ -30,8 +31,19 @@ type Variants struct {
 func (c *Car) Go(start, finish string) []string {
 	re := regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`)
 
+	data, _ := ioutil.ReadFile(c.file)
+
+	l := len(strings.Split(string(data), "\n")) - 1
+
 	all := []map[string]string{}
-	for _, line := range strings.Split(c.maps, "\n") {
+	for i := 0; i < l; i++ {
+		data, err := ioutil.ReadFile(c.file)
+		if err != nil {
+			return []string{}
+		}
+
+		line := strings.Split(string(data), "\n")[i]
+
 		match := re.FindStringSubmatch(line)
 		params := map[string]string{}
 		for i, name := range re.SubexpNames() {
