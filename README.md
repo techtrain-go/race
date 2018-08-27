@@ -27,5 +27,3 @@ E - 3 - B
 ```
 go test -bench=. -v
 ```
-
-
