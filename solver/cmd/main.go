@@ -32,6 +32,15 @@ func main() {
 	}
 
 	// Code for getting inputs from os.Args[1]
+	// ...
+	// ...
+
+	// remove code below after code is done
+	// ===
+	_ = rawData
+	var points []solver.Point
+	// =====
+
 	_, err = solver.Solve(points, start, dest)
 	if err != nil {
 		log.Fatal(err)
