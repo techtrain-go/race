@@ -84,7 +84,7 @@ func (c *Car) Go(start, finish string) ([]string, error) {
 	// To map return to original
 	codesToNames := map[int]string{}
 	for name, code := range namesToCodes {
-		fmt.Println(name, code)
+		//fmt.Println(name, code)
 		codesToNames[code] = name
 	}
 

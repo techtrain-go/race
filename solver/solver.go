@@ -1,8 +1,6 @@
 package solver
 
 import (
-	"fmt"
-
 	"github.com/RyanCarrier/dijkstra"
 	"github.com/pkg/errors"
 )
@@ -36,7 +34,7 @@ func Solve(points []Point, start, end int) (dijkstra.BestPath, error) {
 	}
 
 	for _, value := range points {
-		fmt.Println(value.Left, value.Right, value.Distance)
+		//fmt.Println(value.Left, value.Right, value.Distance)
 		err := graph.AddArc(value.Left, value.Right, value.Distance)
 		if err != nil {
 			return dijkstra.BestPath{}, errors.Wrapf(err, "failed adding arcs %d->%d %d", value.Left, value.Right, value.Distance)
