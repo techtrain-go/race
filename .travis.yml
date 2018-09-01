@@ -6,6 +6,7 @@ go:
 env:
   global:
     - PATH=$HOME/gopath/bin:$PATH
+    - GO111MODULE=on
 
 script:
   - go test -bench=. -v
