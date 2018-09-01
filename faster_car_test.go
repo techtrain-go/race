@@ -1,12 +1,21 @@
 package race
 
 import (
+	"os"
 	"testing"
 )
 
 func TestFasterCar_Go(t *testing.T) {
-	car := NewCar("./routes")
-	path := car.Go("A", "D")
+	routes, err := os.Open("./routes")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	car := NewCar(routes)
+	path, err := car.Go("A", "D")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected := []string{"A", "C", "D"}
 

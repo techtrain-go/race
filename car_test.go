@@ -1,6 +1,7 @@
 package race
 
 import (
+	"os"
 	"testing"
 )
 
@@ -28,11 +29,18 @@ K - 8 - H
 `
 
 func TestCar_Go(t *testing.T) {
-	car := NewCar("./routes")
-	path := car.Go("A", "D")
+	routes, err := os.Open("./routes")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	car := NewCar(routes)
+	path, err := car.Go("A", "I")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected := []string{"A", "C", "D"}
-
 	for i, city := range expected {
 		if city != path[i] {
 			t.Failed()
@@ -43,8 +51,13 @@ func TestCar_Go(t *testing.T) {
 }
 
 func BenchmarkCar_Go(b *testing.B) {
-	car := NewCar("./routes")
+	routes, err := os.Open("./routes")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	car := NewCar(routes)
 	for i := 0; i < b.N; i++ {
-		car.Go("A", "D")
+		car.Go("A", "I")
 	}
 }

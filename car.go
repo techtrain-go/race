@@ -1,19 +1,25 @@
 package race
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/techtrain-go/race/solver"
 )
 
 type Car struct {
-	file string
+	reader io.Reader
+	re     *regexp.Regexp
 }
 
-func NewCar(f string) *Car {
+func NewCar(reader io.Reader) *Car {
 	return &Car{
-		file: f,
+		reader: reader,
+		re:     regexp.MustCompile(`(?P<Left>[A-Z1-9]+) - (?P<Edge>[0-9]+) - (?P<Right>[A-Z1-9]+)`),
 	}
 }
 
@@ -23,27 +29,15 @@ type Point struct {
 	Right string
 }
 
-type Variants struct {
-	Value  int
-	Cities []string
-}
+func (c *Car) Go(start, finish string) ([]string, error) {
+	re := c.re
+	rawData, _ := ioutil.ReadAll(c.reader)
+	data := string(rawData)
+	l := len(strings.Split(data, "\n")) - 1
 
-func (c *Car) Go(start, finish string) []string {
-	re := regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`)
-
-	data, _ := ioutil.ReadFile(c.file)
-
-	l := len(strings.Split(string(data), "\n")) - 1
-
-	all := []map[string]string{}
+	var all []map[string]string
 	for i := 0; i < l; i++ {
-		data, err := ioutil.ReadFile(c.file)
-		if err != nil {
-			return []string{}
-		}
-
-		line := strings.Split(string(data), "\n")[i]
-
+		line := strings.Split(data, "\n")[i]
 		match := re.FindStringSubmatch(line)
 		params := map[string]string{}
 		for i, name := range re.SubexpNames() {
@@ -55,7 +49,7 @@ func (c *Car) Go(start, finish string) []string {
 		all = append(all, params)
 	}
 
-	points := []Point{}
+	var points []Point
 	for _, p := range all {
 		edge, _ := strconv.Atoi(p["Edge"])
 		points = append(points, Point{
@@ -65,32 +59,67 @@ func (c *Car) Go(start, finish string) []string {
 		})
 	}
 
-	cities := []string{}
-	value := 0
+	// Convert our points array to int->string table
+	i := 1
+	namesToCodes := map[string]int{}
 	for _, p := range points {
-		if p.Left == start {
-			next := min(points, start)
-			cities = append(cities, next.Left)
-			start = next.Right
-			value += next.Edge
+		if _, ok := namesToCodes[p.Left]; ok {
+			continue
 		}
 
-		if p.Right == finish {
-			cities = append(cities, p.Right)
-			break
-		}
+		namesToCodes[p.Left] = i
+		i++
 	}
 
-	return cities
-}
-
-func min(points []Point, start string) Point {
-	min := Point{Edge: 100}
+	// Add right side too
 	for _, p := range points {
-		if p.Left == start && p.Edge < min.Edge {
-			min = p
+		if _, ok := namesToCodes[p.Right]; ok {
+			continue
 		}
+
+		namesToCodes[p.Right] = i
+		i++
 	}
 
-	return min
+	// To map return to original
+	codesToNames := map[int]string{}
+	for name, code := range namesToCodes {
+		fmt.Println(name, code)
+		codesToNames[code] = name
+	}
+
+	var spoints []solver.Point
+	for _, value := range points {
+		leftCode, ok := namesToCodes[value.Left]
+		if !ok {
+			return nil, fmt.Errorf("failed to find '%s' for left code from incoming path in original map", value.Left)
+		}
+
+		rightCode, ok := namesToCodes[value.Right]
+		if !ok {
+			return nil, fmt.Errorf("failed to find '%s' for right code from incoming path in original map", value.Right)
+		}
+		spoints = append(spoints, solver.Point{
+			Left:     leftCode,
+			Distance: int64(value.Edge),
+			Right:    rightCode,
+		})
+	}
+
+	path, err := solver.Solve(spoints, namesToCodes[start], namesToCodes[finish])
+	if err != nil {
+		return nil, err
+	}
+
+	var resultPath []string
+	for _, value := range path.Path {
+		names, ok := codesToNames[value]
+		if !ok {
+			return nil, fmt.Errorf("failed to find code %d from result path in original map", value)
+		}
+
+		resultPath = append(resultPath, names)
+	}
+
+	return resultPath, nil
 }
