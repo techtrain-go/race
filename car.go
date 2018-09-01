@@ -13,13 +13,11 @@ import (
 
 type Car struct {
 	reader io.Reader
-	re     *regexp.Regexp
 }
 
 func NewCar(reader io.Reader) *Car {
 	return &Car{
 		reader: reader,
-		re:     regexp.MustCompile(`(?P<Left>[A-Z1-9]+) - (?P<Edge>[0-9]+) - (?P<Right>[A-Z1-9]+)`),
 	}
 }
 
@@ -30,7 +28,7 @@ type Point struct {
 }
 
 func (c *Car) Go(start, finish string) ([]string, error) {
-	re := c.re
+	re := regexp.MustCompile(`(?P<Left>[A-Z1-9]+) - (?P<Edge>[0-9]+) - (?P<Right>[A-Z1-9]+)`)
 	rawData, err := ioutil.ReadAll(c.reader)
 	if err != nil {
 		return nil, err
