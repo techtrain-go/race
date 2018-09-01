@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/techtrain-go/race/solver"
 )
 
@@ -28,7 +29,7 @@ type Point struct {
 }
 
 func (c *Car) Go(start, finish string) ([]string, error) {
-	re := regexp.MustCompile(`(?P<Left>[A-Z1-9]+) - (?P<Edge>[0-9]+) - (?P<Right>[A-Z1-9]+)`)
+	re := regexp.MustCompile(`(?P<Left>[a-zA-Z1-9]+) - (?P<Edge>[0-9]+) - (?P<Right>[a-zA-Z1-9]+)`)
 	rawData, err := ioutil.ReadAll(c.reader)
 	if err != nil {
 		return nil, err
@@ -53,6 +54,10 @@ func (c *Car) Go(start, finish string) ([]string, error) {
 		}
 
 		all = append(all, params)
+	}
+
+	if len(all) == 0 {
+		return nil, errors.New("failed to load any data")
 	}
 
 	var points []Point
