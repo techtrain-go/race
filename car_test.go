@@ -42,10 +42,10 @@ func TestCar_Go(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []string{"A", "C", "D"}
+	expected := []string{"A", "E", "L", "H", "I"}
 	for i, city := range expected {
 		if city != path[i] {
-			t.Failed()
+			t.FailNow()
 		}
 	}
 
