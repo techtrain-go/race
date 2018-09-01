@@ -31,7 +31,15 @@ type Point struct {
 
 func (c *Car) Go(start, finish string) ([]string, error) {
 	re := c.re
-	rawData, _ := ioutil.ReadAll(c.reader)
+	rawData, err := ioutil.ReadAll(c.reader)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rawData) == 0 {
+		return nil, io.EOF
+	}
+
 	data := string(rawData)
 	l := len(strings.Split(data, "\n")) - 1
 

@@ -1,6 +1,8 @@
 package race
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -51,13 +53,25 @@ func TestCar_Go(t *testing.T) {
 }
 
 func BenchmarkCar_Go(b *testing.B) {
+	// This benchmark do not test IO speed but it does test parsing and route searching
 	routes, err := os.Open("./routes")
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	car := NewCar(routes)
+	data, err := ioutil.ReadAll(routes)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
-		car.Go("A", "I")
+		car := NewCar(bytes.NewReader(data))
+		_, err = car.Go("A", "I")
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
